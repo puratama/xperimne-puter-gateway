@@ -32,6 +32,10 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    if (!user.passwordHash) {
+      return NextResponse.json({ error: "Akun ini menggunakan login Google. Tidak bisa ubah password." }, { status: 400 });
+    }
+
     const { valid } = await verifyPassword(currentPassword, user.passwordHash);
     if (!valid) {
       return NextResponse.json({ error: "Current password is incorrect" }, { status: 401 });

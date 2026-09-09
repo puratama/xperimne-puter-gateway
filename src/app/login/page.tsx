@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Eye, EyeOff, Lock, Mail, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -11,8 +11,9 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import AuthBrand from "@/components/auth/AuthBrand";
 import { getApiErrorMessage } from "@/lib/api-error";
+import GoogleIcon from "@/components/auth/GoogleIcon";
 
-export default function LoginPage() {
+function LoginPageInner() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,6 +22,14 @@ export default function LoginPage() {
   const [needsVerification, setNeedsVerification] = useState(false);
   const [resending, setResending] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const error = searchParams.get("error");
+    if (error === "google_failed") setError("Login Google gagal. Coba lagi.");
+    else if (error === "rate_limited") setError("Terlalu banyak percobaan. Coba lagi nanti.");
+    else if (error === "account_inactive") setError("Akun tidak aktif. Hubungi admin.");
+  }, [searchParams]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -91,6 +100,25 @@ export default function LoginPage() {
             <p className="text-sm text-muted-foreground">Masuk ke dashboard kamu</p>
           </CardHeader>
           <CardContent>
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full"
+              onClick={() => window.location.href = "/api/auth/google"}
+            >
+              <GoogleIcon className="w-5 h-5 mr-2" />
+              Login dengan Google
+            </Button>
+
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">atau</span>
+              </div>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -178,5 +206,13 @@ export default function LoginPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginPageInner />
+    </Suspense>
   );
 }

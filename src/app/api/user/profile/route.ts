@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
   const user = await prisma.user.findUnique({
     where: { id: identity.user.id },
-    select: { id: true, email: true, name: true, role: true, createdAt: true },
+    select: { id: true, email: true, name: true, role: true, provider: true, avatar: true, createdAt: true },
   });
 
   if (!user) {
@@ -40,7 +40,7 @@ export async function PUT(request: NextRequest) {
     const user = await prisma.user.update({
       where: { id: identity.user.id },
       data,
-      select: { id: true, email: true, name: true, role: true, createdAt: true },
+      select: { id: true, email: true, name: true, role: true, provider: true, avatar: true, createdAt: true },
     });
 
     return NextResponse.json({ user });

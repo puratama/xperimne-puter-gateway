@@ -12,10 +12,15 @@ datasource db {
 // ====== Users & Auth ======
 
 model User {
-  id           String  @id @default(cuid())
-  email        String  @unique
-  passwordHash String
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String?
   name         String?
+
+  // OAuth / provider info
+  provider   String  @default("email") // "email" | "google"
+  providerId String? @unique            // Google sub (unique, nullable)
+  avatar     String?
 
   // RBAC
   role String @default("user") // "user" | "superadmin"
