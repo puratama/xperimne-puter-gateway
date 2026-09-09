@@ -31,10 +31,15 @@ export async function verifyPassword(password: string, storedHash: string): Prom
   // Legacy SHA-256 hash: 64 hex characters
   if (/^[0-9a-f]{64}$/i.test(storedHash)) {
     // Verify using old method (for migration)
-    const { hashPassword: oldHashPassword } = await import("./auth");
-    const legacyHash = oldHashPassword(password);
-    const valid = legacyHash === storedHash;
-    return { valid, needsRehash: valid }; // if valid, we need to rehash to bcrypt
+    const { legacyHashPassword } = await import("./auth");
+    const legacyHash = legacyHashPassword(password);
+    // Timing-safe comparison to prevent timing attacks on legacy hashes
+    const { timingSafeEqual } = await import("crypto");
+    const valid = timingSafeEqual(
+      Buffer.from(legacyHash, "hex"),
+      Buffer.from(storedHash, "hex")
+    );
+    return { valid, needsRehash: valid };
   }
 
   // Unknown format

@@ -34,7 +34,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (!user.passwordHash) {
-      return NextResponse.json({ error: "Akun ini menggunakan login Google. Silakan login dengan Google." }, { status: 400 });
+      // Return same generic message to prevent email enumeration
+      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
     const { valid, needsRehash } = await verifyPassword(password, user.passwordHash);
@@ -73,8 +74,9 @@ export async function POST(request: NextRequest) {
       wallet: user.wallet ? { balance: Number(user.wallet.balance) } : null,
     });
   } catch (error: unknown) {
+    console.error("[login]", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Internal server error" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

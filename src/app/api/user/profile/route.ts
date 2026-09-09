@@ -10,14 +10,15 @@ export async function GET(request: NextRequest) {
 
   const user = await prisma.user.findUnique({
     where: { id: identity.user.id },
-    select: { id: true, email: true, name: true, role: true, provider: true, avatar: true, createdAt: true },
+    select: { id: true, email: true, name: true, role: true, provider: true, providerId: true, avatar: true, passwordHash: true, createdAt: true },
   });
 
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  return NextResponse.json({ user });
+  const { passwordHash, providerId, ...rest } = user;
+  return NextResponse.json({ user: { ...rest, hasPassword: !!passwordHash, hasGoogle: !!providerId } });
 }
 
 export async function PUT(request: NextRequest) {
@@ -30,16 +31,14 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { name } = body as { name?: string };
 
-    if (!name) {
+    const trimmedName = name?.trim();
+    if (!trimmedName) {
       return NextResponse.json({ error: "name required" }, { status: 400 });
     }
 
-    const data: { name?: string } = {};
-    if (name !== undefined) data.name = name;
-
     const user = await prisma.user.update({
       where: { id: identity.user.id },
-      data,
+      data: { name: trimmedName },
       select: { id: true, email: true, name: true, role: true, provider: true, avatar: true, createdAt: true },
     });
 
@@ -54,7 +53,7 @@ export async function PUT(request: NextRequest) {
     ) {
       return NextResponse.json({ error: "Email already in use" }, { status: 409 });
     }
-    const message = error instanceof Error ? error.message : "Internal server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[profile-update]", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

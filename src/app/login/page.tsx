@@ -29,6 +29,7 @@ function LoginPageInner() {
     if (error === "google_failed") setError("Login Google gagal. Coba lagi.");
     else if (error === "rate_limited") setError("Terlalu banyak percobaan. Coba lagi nanti.");
     else if (error === "account_inactive") setError("Akun tidak aktif. Hubungi admin.");
+    else if (error === "google_account_conflict") setError("Email ini sudah terdaftar dengan akun lain. Hubungi admin jika ini adalah akun Anda.");
   }, [searchParams]);
 
   async function handleSubmit(e: React.FormEvent) {

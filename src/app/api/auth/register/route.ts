@@ -30,8 +30,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const existing = await prisma.user.findUnique({ where: { email } });
+    const existing = await prisma.user.findUnique({
+      where: { email },
+      select: { provider: true, providerId: true },
+    });
     if (existing) {
+      if (existing.providerId) {
+        return NextResponse.json(
+          { error: "Email ini sudah terdaftar via Google. Silakan login dengan Google." },
+          { status: 409 }
+        );
+      }
       return NextResponse.json({ error: "Email already registered" }, { status: 409 });
     }
 
@@ -67,8 +76,9 @@ export async function POST(request: NextRequest) {
       message: "Akun dibuat. Cek email untuk verifikasi.",
     }, { status: 201 });
   } catch (error: unknown) {
+    console.error("[register]", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Internal server error" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

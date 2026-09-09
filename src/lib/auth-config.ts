@@ -5,9 +5,9 @@ import { type JWTPayload } from "jose";
 // Validasi di fungsi (bukan module scope) supaya `next build` tidak gagal
 // saat env build belum tersedia; guard tetap aktif saat dipakai runtime.
 export function getSecret(): Uint8Array {
-  const secretKey = process.env.AUTH_SECRET || process.env.AUTH_SALT;
+  const secretKey = process.env.AUTH_SECRET;
   if (!secretKey) {
-    throw new Error("FATAL: AUTH_SECRET (or AUTH_SALT) environment variable is required");
+    throw new Error("FATAL: AUTH_SECRET environment variable is required");
   }
   return new TextEncoder().encode(secretKey);
 }

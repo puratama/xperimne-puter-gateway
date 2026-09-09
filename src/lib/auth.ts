@@ -60,20 +60,19 @@ export async function verifyTokenEdge(token: string): Promise<SessionPayload | n
   }
 }
 
-// Central password hashing — AES-style SHA256 with AUTH_SALT.
-// For production: use bcrypt/argon2. (YAGNI for now.)
-export function hashPassword(password: string): string {
+// Legacy password hashing — internal only for migration.
+// Deprecated: all new code should use password.ts (bcrypt).
+const LEGACY_SALT_FALLBACK = "xperimne-salt";
+
+/** @deprecated Used only for migrating legacy SHA-256 hashes. */
+function legacyHashPassword(password: string): string {
   const salt = process.env.AUTH_SALT;
-  if (!salt && process.env.NODE_ENV === "production") {
-    throw new Error("FATAL: AUTH_SALT environment variable is required in production");
-  }
-  const currentSalt = salt || "xperimne-salt";
+  const currentSalt = salt || LEGACY_SALT_FALLBACK;
   return createHash("sha256").update(password + currentSalt).digest("hex");
 }
 
-export function verifyPassword(password: string, hash: string): boolean {
-  return hashPassword(password) === hash;
-}
+/** @deprecated Used only by password.ts for legacy hash verification during migration. */
+export { legacyHashPassword };
 
 // Cron secret guard — production wajib set CRON_SECRET
 export function getCronSecret(): string {
