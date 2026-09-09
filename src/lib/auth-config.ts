@@ -16,6 +16,7 @@ export const EXPIRY = "7d";
 
 export interface SessionPayload extends JWTPayload {
   sub: string;
+  name: string;
   email: string;
   role: "user" | "superadmin";
   status: "active" | "suspended" | "banned";

@@ -47,9 +47,9 @@ interface NavItem {
 
 const userNavItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/plan", label: "Token Plan", icon: CreditCard },
-  { href: "/models", label: "Models", icon: Cpu },
-  { href: "/keys", label: "API Keys", icon: Key },
+  { href: "/plan", label: "Package", icon: CreditCard },
+  { href: "/models", label: "Model", icon: Cpu },
+  { href: "/keys", label: "API Key", icon: Key },
   { href: "/usage", label: "Usage", icon: BarChart3 },
 ];
 
@@ -150,13 +150,13 @@ function UserMenu({ user, variant, onLogout }: { user: ShellUser; variant: "user
               <Wallet className="h-4 w-4" /> My Wallet
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push("/my/plan")} className={itemCls}>
-              <CreditCard className="h-4 w-4" /> My Plan
+              <CreditCard className="h-4 w-4" /> My Package
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push("/support")} className={itemCls}>
               <LifeBuoy className="h-4 w-4" /> Support
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push("/settings")} className={itemCls}>
-              <Settings className="h-4 w-4" /> Settings
+              <Settings className="h-4 w-4" /> Setting
             </DropdownMenuItem>
           </>
         ) : (
@@ -165,7 +165,7 @@ function UserMenu({ user, variant, onLogout }: { user: ShellUser; variant: "user
               <Gauge className="h-4 w-4" /> Client Dashboard
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push("/settings")} className={itemCls}>
-              <Settings className="h-4 w-4" /> Settings
+              <Settings className="h-4 w-4" /> Setting
             </DropdownMenuItem>
           </>
         )}

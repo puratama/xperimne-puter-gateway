@@ -53,13 +53,13 @@ type RangeFilter = "week" | "month";
 type UsageTab = "daily" | "recent" | "models";
 
 const RANGE_OPTIONS: { key: RangeFilter; label: string }[] = [
-  { key: "week", label: "1 Week" },
-  { key: "month", label: "1 Month" },
+  { key: "week", label: "1 Minggu" },
+  { key: "month", label: "1 Bulan" },
 ];
 
 const RANGE_LABEL: Record<RangeFilter, string> = {
-  week: "Last 7 days",
-  month: "Last 30 days",
+  week: "1 minggu terakhir",
+  month: "1 bulan terakhir",
 };
 
 const RANGE_DAYS: Record<RangeFilter, number> = {
@@ -101,10 +101,10 @@ export default function UsagePage() {
     setError("");
     try {
       const response = await fetch(`/api/user/usage?range=${r}`);
-      if (!response.ok) throw new Error("Failed to load usage.");
+      if (!response.ok) throw new Error("Gagal memuat data penggunaan");
       setUsage((await response.json()) as UsageResponse);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load usage.");
+      setError(err instanceof Error ? err.message : "Gagal memuat data penggunaan");
     } finally {
       setLoading(false);
     }
@@ -132,8 +132,8 @@ export default function UsagePage() {
               <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
                 <BarChart3 className="h-4 w-4 text-primary" /> Usage
               </div>
-              <h1 className="text-3xl font-semibold tracking-tight">Usage dashboard</h1>
-              <p className="text-sm text-muted-foreground">Track requests, tokens, and IDR cost.</p>
+              <h1 className="text-3xl font-semibold tracking-tight">Riwayat Penggunaan</h1>
+              <p className="text-sm text-muted-foreground">Lihat penggunaan model dan token Anda</p>
             </div>
             <div className="flex items-center gap-2">
               <Tabs
@@ -147,8 +147,8 @@ export default function UsagePage() {
                 size="icon-lg"
                 onClick={() => loadUsage(range)}
                 disabled={loading}
-                aria-label="Refresh usage"
-                title="Refresh usage"
+                aria-label="Refresh"
+                title="Refresh"
               >
                 <RefreshCw className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
               </Button>
@@ -182,7 +182,7 @@ export default function UsagePage() {
                 <Card>
                   <CardContent className="p-5">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Hash className="h-4 w-4 text-info" /> Requests ({RANGE_LABEL[range]})
+                      <Hash className="h-4 w-4 text-info" /> Request - {RANGE_LABEL[range]}
                     </div>
                     <div className="mt-3 text-3xl font-semibold">{number.format(usage.totalRequests)}</div>
                   </CardContent>
@@ -190,7 +190,7 @@ export default function UsagePage() {
                 <Card>
                   <CardContent className="p-5">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <BarChart3 className="h-4 w-4 text-success" /> Tokens ({RANGE_LABEL[range]})
+                      <BarChart3 className="h-4 w-4 text-success" /> Token - {RANGE_LABEL[range]}
                     </div>
                     <div className="mt-3 text-3xl font-semibold">{number.format(usage.totalTokens)}</div>
                   </CardContent>
@@ -198,7 +198,7 @@ export default function UsagePage() {
                 <Card>
                   <CardContent className="p-5">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Coins className="h-4 w-4 text-warning" /> Cost ({RANGE_LABEL[range]})
+                      <Coins className="h-4 w-4 text-warning" /> Biaya - {RANGE_LABEL[range]}
                     </div>
                     <div className="mt-3 text-3xl font-semibold">{formatCurrency(usage.totalCost)}</div>
                   </CardContent>
@@ -207,9 +207,9 @@ export default function UsagePage() {
 
               <Tabs
                 items={[
-                  { value: "daily", label: "Daily usage" },
-                  { value: "recent", label: "Recent requests" },
-                  { value: "models", label: "By model" },
+                  { value: "daily", label: "Penggunaan Harian" },
+                  { value: "recent", label: "Penggunaan Terakhir" },
+                  { value: "models", label: "Per-model" },
                 ]}
                 value={activeTab}
                 onValueChange={(value) => setActiveTab(value as UsageTab)}
@@ -219,13 +219,13 @@ export default function UsagePage() {
               {activeTab === "daily" && <Card>
                 <CardContent className="p-5">
                   <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-sm font-semibold">Daily usage</h2>
+                    <h2 className="text-sm font-semibold">Penggunaan Harian</h2>
                     <span className="text-xs text-muted-foreground">{RANGE_LABEL[range]} · {days.filter((d) => d.tokens > 0).length} hari aktif</span>
                   </div>
                   {days.some((day) => day.tokens > 0) ? (
                     <UsageBarChart data={days} />
                   ) : (
-                    <EmptyState icon={BarChart3} title="No usage in this period." />
+                    <EmptyState icon={BarChart3} title="Tidak ada penggunaan dalam periode ini." />
                   )}
                 </CardContent>
               </Card>}
@@ -233,30 +233,30 @@ export default function UsagePage() {
               {activeTab === "recent" && <Card>
                 <CardContent className="p-5">
                   <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-sm font-semibold">Recent usage</h2>
+                    <h2 className="text-sm font-semibold">Penggunaan Terakhir</h2>
                     <span className="text-xs text-muted-foreground">Waktu lokal</span>
                   </div>
                   <div className="overflow-x-auto">
                     <Table className="w-full text-sm">
                       <TableHeader className="border-b border-border text-left text-xs text-muted-foreground">
                         <TableRow>
-                          <TableHead className="py-2 font-medium">Datetime</TableHead>
+                          <TableHead className="py-2 font-medium">Tanggal</TableHead>
                           <TableHead className="py-2 font-medium">Model</TableHead>
-                          <TableHead className="py-2 text-right font-medium">Input</TableHead>
-                          <TableHead className="py-2 text-right font-medium">Output</TableHead>
-                          <TableHead className="py-2 text-right font-medium">Total</TableHead>
+                          <TableHead className="py-2 text-center font-medium">Input</TableHead>
+                          <TableHead className="py-2 text-center font-medium">Output</TableHead>
+                          <TableHead className="py-2 text-center font-medium">Total</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody className="divide-y">
                         {usage.records.length === 0 ? (
-                          <TableRow><TableCell colSpan={5} className="py-8 text-center text-muted-foreground">No usage records.</TableCell></TableRow>
+                          <TableRow><TableCell colSpan={5} className="py-8 text-center text-muted-foreground">Tidak ada catatan penggunaan.</TableCell></TableRow>
                         ) : visibleRecords.map((record, index) => (
                           <TableRow key={`${record.datetime}-${index}`} className="border-b border-border/50">
                             <TableCell className="py-3 text-muted-foreground">{formatDateTime(record.datetime)}</TableCell>
                             <TableCell className="py-3 font-medium">{record.model}</TableCell>
-                            <TableCell className="py-3 text-right tabular-nums">{number.format(record.promptTokens)}</TableCell>
-                            <TableCell className="py-3 text-right tabular-nums">{number.format(record.completionTokens)}</TableCell>
-                            <TableCell className="py-3 text-right font-medium tabular-nums">{number.format(record.totalTokens)}</TableCell>
+                            <TableCell className="py-3 text-center tabular-nums">{number.format(record.promptTokens)}</TableCell>
+                            <TableCell className="py-3 text-center tabular-nums">{number.format(record.completionTokens)}</TableCell>
+                            <TableCell className="py-3 text-center font-medium tabular-nums">{number.format(record.totalTokens)}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -268,28 +268,28 @@ export default function UsagePage() {
 
               {activeTab === "models" && <Card>
                 <CardContent className="p-5">
-                  <h2 className="mb-4 text-sm font-semibold">Per-model usage</h2>
+                  <h2 className="mb-4 text-sm font-semibold">Penggunaan Per-model</h2>
                   <div className="overflow-x-auto">
                     <Table className="w-full text-sm">
                       <TableHeader className="border-b border-border text-left text-xs text-muted-foreground">
                         <TableRow>
                           <TableHead className="py-2 font-medium">Model</TableHead>
-                          <TableHead className="py-2 text-right font-medium">Tokens</TableHead>
-                          <TableHead className="py-2 text-right font-medium">Cost</TableHead>
-                          <TableHead className="py-2 text-right font-medium">Requests</TableHead>
-                          <TableHead className="py-2 text-right font-medium">% Tokens</TableHead>
+                          <TableHead className="py-2 text-center font-medium">Tokens</TableHead>
+                          <TableHead className="py-2 text-center font-medium">Cost</TableHead>
+                          <TableHead className="py-2 text-center font-medium">Requests</TableHead>
+                          <TableHead className="py-2 text-center font-medium">% Tokens</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody className="divide-y">
                         {usage.byModel.length === 0 ? (
-                          <TableRow><TableCell colSpan={5} className="py-8 text-center text-muted-foreground">No model usage in this period.</TableCell></TableRow>
+                          <TableRow><TableCell colSpan={5} className="py-8 text-center text-muted-foreground">Tidak ada penggunaan model dalam periode ini.</TableCell></TableRow>
                         ) : usage.byModel.map((model) => (
                           <TableRow key={model.model} className="border-b border-border/50">
                             <TableCell className="py-3 font-medium">{model.model}</TableCell>
-                            <TableCell className="py-3 text-right tabular-nums">{number.format(model.tokens)}</TableCell>
-                            <TableCell className="py-3 text-right tabular-nums">{formatCurrency(model.cost)}</TableCell>
-                            <TableCell className="py-3 text-right tabular-nums">{number.format(model.requests)}</TableCell>
-                            <TableCell className="py-3 text-right tabular-nums">{usage.totalTokens ? ((model.tokens / usage.totalTokens) * 100).toFixed(1) : "0.0"}%</TableCell>
+                            <TableCell className="py-3 text-center tabular-nums">{number.format(model.tokens)}</TableCell>
+                            <TableCell className="py-3 text-center tabular-nums">{formatCurrency(model.cost)}</TableCell>
+                            <TableCell className="py-3 text-center tabular-nums">{number.format(model.requests)}</TableCell>
+                            <TableCell className="py-3 text-center tabular-nums">{usage.totalTokens ? ((model.tokens / usage.totalTokens) * 100).toFixed(1) : "0.0"}%</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>

@@ -46,8 +46,6 @@ function formatNumber(n: number) {
   return n.toLocaleString("id-ID");
 }
 
-
-
 function lastSevenDays(byDay: UsageData["byDay"]) {
   const today = new Date();
   const usageMap = new Map(byDay.map((day) => [day.date, day]));
@@ -112,7 +110,7 @@ export default function DashboardPage() {
     setTimeout(() => setCopied(null), 1800);
   }
 
-  const displayName = user?.name || user?.email || "Builder";
+  const displayName = user?.name || "Builder";
   const maskedKey = apiKey ? `${apiKey.slice(0, 10)}••••${apiKey.slice(-6)}` : "Belum ada API key";
 
   return (
@@ -120,16 +118,29 @@ export default function DashboardPage() {
       <div className="h-full overflow-y-auto bg-[radial-gradient(circle_at_top_left,color-mix(in_oklch,var(--color-primary)_16%,transparent),transparent_32rem),radial-gradient(circle_at_bottom_right,color-mix(in_oklch,var(--color-primary)_10%,transparent),transparent_28rem)]">
         <div className="mx-auto flex max-w-6xl flex-col gap-6 p-4 md:p-8">
           <section className="overflow-hidden rounded-3xl border border-border/80 bg-card/80 shadow-2xl shadow-black/20 backdrop-blur">
-            <div className="grid gap-6 p-6 md:grid-cols-[1.2fr_.8fr] md:p-8">
+            <div className="grid items-center gap-6 p-6 md:grid-cols-[1.2fr_.8fr] md:p-8">
               <div className="space-y-5">
                 <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
                   <Rocket className="h-3.5 w-3.5" /> Dashboard Hub
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold tracking-tight md:text-4xl">Selamat datang, {displayName}</h1>
-                  <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground md:text-base">
-                    Mulai dari sini: salin Base URL, cek API key, atau pantau usage. Semua jalur utama ada dalam satu layar.
-                  </p>
+                  <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+                    {user ? (
+                      <>Selamat datang, {displayName}</>
+                    ) : (
+                      <Skeleton className="inline-block h-10 w-72" />
+                    )}
+                  </h1>
+                  <div className="mt-3 max-w-2xl space-y-2 text-sm leading-6 text-muted-foreground md:text-base">
+                    {siteCfg.loaded ? (
+                      siteCfg.tagline || "Akses Base URL, API key, dan pantau usage dalam satu dashboard."
+                    ) : (
+                      <>
+                        <Skeleton className="h-4 w-full max-w-md" />
+                        <Skeleton className="h-4 w-2/3" />
+                      </>
+                    )}
+                  </div>
                 </div>
                 <div className="flex flex-col gap-3 sm:flex-row">
                   <Link href="/keys">
@@ -148,7 +159,7 @@ export default function DashboardPage() {
               <Card className="border-primary/20 bg-background/70">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-sm">
-                    <Terminal className="h-4 w-4 text-primary" /> Quick config
+                    <Terminal className="h-4 w-4 text-primary" /> Konfigurasi cepat
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -160,7 +171,7 @@ export default function DashboardPage() {
                       <div className="mb-2 flex items-center justify-between text-xs uppercase tracking-[0.2em] text-muted-foreground">
                         <span>{item.label}</span>
                         {item.id === "base" && (
-                          <Button variant="ghost" size="xs" onClick={() => copy(item.value, item.id)}>
+                          <Button variant="ghost" size="xs" className="uppercase" onClick={() => copy(item.value, item.id)}>
                             {copied === item.id ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                             {copied === item.id ? "Disalin" : "Salin"}
                           </Button>
@@ -169,7 +180,7 @@ export default function DashboardPage() {
                       {(item.id === "base" && !siteCfg.loaded) || (item.id === "key" && !keysLoaded) ? (
                         <Skeleton className="h-4 w-full" />
                       ) : (
-                        <code className="break-all text-xs text-foreground/90">{item.masked || item.value}</code>
+                        <code className="break-all text-sm text-foreground/90">{item.masked || item.value}</code>
                       )}
                     </div>
                   ))}
@@ -212,7 +223,7 @@ export default function DashboardPage() {
               <CardContent className="space-y-3">
                 {loading ? <CardRowSkeleton count={3} /> : [
                   { href: "/keys", title: "Generate API key", desc: "Buat key untuk app, server, atau IDE kamu.", icon: Key },
-                  { href: "/models", title: "Pilih model dan harga", desc: "Bandingkan model, konteks, speed, dan biaya.", icon: CreditCard },
+                  { href: "/models", title: "Pilih model dan harga", desc: "Bandingkan model dan biaya.", icon: CreditCard },
                   { href: "/settings", title: "Atur akun", desc: "Ubah profil dan preferensi aplikasi.", icon: Settings },
                 ].map((item) => {
                   const Icon = item.icon;
@@ -234,7 +245,7 @@ export default function DashboardPage() {
 
             <Card className="bg-card/75 backdrop-blur">
               <CardHeader>
-                <CardTitle className="text-base">Usage 7 hari terakhir</CardTitle>
+                <CardTitle className="text-base">Penggunaan 7 hari terakhir</CardTitle>
               </CardHeader>
               <CardContent>
                 {loading ? (
@@ -244,7 +255,7 @@ export default function DashboardPage() {
                 ) : (
                   <EmptyState
                     icon={BarChart3}
-                    title="Belum ada usage"
+                    title="Belum ada penggunaan"
                     description="Panggil API pertama kamu."
                   />
                 )}

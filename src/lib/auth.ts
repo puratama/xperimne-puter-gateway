@@ -36,10 +36,10 @@ export async function getSession(): Promise<SessionPayload | null> {
     const session = payload as unknown as SessionPayload;
     const user = await prisma.user.findUnique({
       where: { id: session.sub },
-      select: { status: true, role: true },
+      select: { status: true, name: true, role: true },
     });
     if (!user || user.status !== "active") return null;
-    return { ...session, role: user.role as SessionPayload["role"] };
+    return { ...session, name: user.name as SessionPayload["name"], role: user.role as SessionPayload["role"] };
   } catch {
     return null;
   }

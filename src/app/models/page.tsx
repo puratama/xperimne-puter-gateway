@@ -121,28 +121,28 @@ export default function ModelsPage() {
           <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
-                <Sparkles className="h-4 w-4 text-primary" /> Models
+                <Sparkles className="h-4 w-4 text-primary" /> Model
               </div>
-              <h1 className="text-3xl font-semibold tracking-tight">Browse AI Models</h1>
-              <p className="text-sm text-muted-foreground">Compare models by cost, context window, speed, and quality across all providers.</p>
+              <h1 className="text-3xl font-semibold tracking-tight">Daftar Model</h1>
+              <p className="text-sm text-muted-foreground">Daftar model AI yang tersedia di platform kami.</p>
             </div>
             <Button
-              variant={compareMode ? "default" : "outline"}
+              variant={compareMode ? "destructive" : "outline"}
               onClick={() => setCompareMode(!compareMode)}
-              className={cn(compareMode && "shadow-lg shadow-primary/20")}
+              className={cn(compareMode && "shadow-lg shadow-destructive/20")}
             >
               <ArrowLeftRight className="h-3.5 w-3.5" />
-              {compareMode ? "Exit Compare" : "Compare Models"}
+              {compareMode ? "Tutup Perbandingan" : "Bandingkan Model"}
             </Button>
           </header>
 
           {/* Stats bar */}
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {[
-              { label: "Total Models", value: pricingData.length, icon: Layers, tone: "text-info" },
-              { label: "Providers", value: providers.length, icon: Layers, tone: "text-primary" },
-              { label: "Cheapest Prompt", value: `${formatPrice(getMinPrice(pricingData) * 1000)} / 1M`, icon: Coins, tone: "text-success" },
-              { label: "Most Expensive", value: `${formatPrice(getMaxPrice(pricingData) * 1000)} / 1M`, icon: Coins, tone: "text-warning" },
+              { label: "Total Model", value: pricingData.length, icon: Layers, tone: "text-info" },
+              // { label: "Total Provider", value: providers.length, icon: Layers, tone: "text-primary" },
+              { label: "Harga Termurah", value: `${formatPrice(getMinPrice(pricingData) * 1000)} / 1M`, icon: Coins, tone: "text-success" },
+              { label: "Harga Termahal", value: `${formatPrice(getMaxPrice(pricingData) * 1000)} / 1M`, icon: Coins, tone: "text-warning" },
             ].map((stat) => {
               const Icon = stat.icon;
               return (
@@ -163,13 +163,13 @@ export default function ModelsPage() {
             <div className="relative">
               <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search models by name, ID, or provider..."
+                placeholder="Cari model berdasarkan nama atau model id"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="h-10 pl-10"
               />
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+            {/* <div className="flex flex-wrap items-center gap-2">
               <span className="mr-1 text-xs font-medium text-muted-foreground">Provider</span>
               <FormSelect
                 options={[
@@ -189,16 +189,16 @@ export default function ModelsPage() {
                 isClearable={false}
                 className="w-40"
               />
-            </div>
+            </div> */}
           </div>
 
           {/* Sort bar */}
           <div className="flex items-center justify-between gap-3">
             <p className="text-xs text-muted-foreground">
-              {loading ? "Loading models..." : `Showing ${filteredModels.length} of ${pricingData.length} models`}
+              {loading ? "Memuat model..." : `Menampilkan ${filteredModels.length} of ${pricingData.length} model`}
             </p>
             <div className="flex items-center gap-1.5">
-              <span className="text-xs text-muted-foreground">Sort:</span>
+              <span className="text-xs text-muted-foreground">Urutkan:</span>
               {(["default", "name", "prompt", "completion"] as const).map((field) => (
                 <Button
                   type="button"
@@ -213,7 +213,7 @@ export default function ModelsPage() {
                       : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                   )}
                 >
-                  {field === "default" ? "Default" : field === "name" ? "Name" : field === "prompt" ? "Prompt IDR" : "Completion IDR"}
+                  {field === "default" ? "Default" : field === "name" ? "Nama" : field === "prompt" ? "Harga Input" : "Harga Output"}
                   <SortArrow field={field} />
                 </Button>
               ))}
@@ -229,17 +229,17 @@ export default function ModelsPage() {
                     {compareList.length}
                   </div>
                   <span className="text-xs text-primary">
-                    model{compareList.length > 1 ? "s" : ""} selected
-                    {compareList.length < 2 ? " — select at least 2 to compare" : ""}
+                    model dipilih
+                    {compareList.length < 2 ? " — pilih minimal 2 untuk dibandingkan" : ""}
                   </span>
                 </div>
                 {compareList.length >= 2 && (
                   <div className="flex items-center gap-2">
                     <Button size="sm" variant="ghost" onClick={() => setCompareList([])} className="h-7 text-xs">
-                      Clear
+                      Hapus
                     </Button>
                     <Button size="sm" onClick={() => setExpandedModel("compare")} className="h-7 gap-1 text-xs">
-                      <ArrowLeftRight className="h-3 w-3" /> Compare Now
+                      <ArrowLeftRight className="h-3 w-3" /> Bandingkan
                     </Button>
                   </div>
                 )}
@@ -251,13 +251,13 @@ export default function ModelsPage() {
           <Dialog open={expandedModel === "compare" && compareList.length >= 2} onOpenChange={(open) => { if (!open) setExpandedModel(null); }}>
             <DialogContent className="sm:max-w-5xl border-primary/20">
               <DialogHeader className="border-b border-border bg-muted/20 px-6 py-4">
-                <DialogTitle className="text-base font-semibold">Model Comparison</DialogTitle>
+                <DialogTitle className="text-base font-semibold">Perbandingan Model</DialogTitle>
               </DialogHeader>
               <DialogBody className="overflow-x-auto">
                 <Table className="w-full text-sm">
                   <TableHeader>
                     <TableRow className="border-b border-border">
-                      <TableHead className="sticky left-0 bg-card px-4 py-3 text-left text-xs font-medium text-muted-foreground">Feature</TableHead>
+                      <TableHead className="sticky left-0 bg-card px-4 py-3 text-left text-xs font-medium text-muted-foreground">Fitur</TableHead>
                       {compareList.map((id) => {
                         const m = pricingData.find((m) => m.id === id);
                         return (
@@ -268,8 +268,8 @@ export default function ModelsPage() {
                   </TableHeader>
                   <TableBody>
                     {[
-                      { key: "speed", label: "Speed", render: (m: ModelPricing) => speedLabel(m.speed) },
-                      { key: "quality", label: "Quality" },
+                      { key: "speed", label: "Kecepatan", render: (m: ModelPricing) => speedLabel(m.speed) },
+                      { key: "quality", label: "Kualitas" },
                     ].map((row) => (
                       <TableRow key={row.key} className="border-b border-border last:border-b-0">
                         <TableCell className="sticky left-0 bg-card px-4 py-3 text-xs text-muted-foreground">{row.label}</TableCell>
@@ -321,15 +321,15 @@ export default function ModelsPage() {
           ) : filteredModels.length === 0 ? (
             <EmptyState
               icon={Search}
-              title="No Models Found"
-              description="Try adjusting your filters or search query"
+              title="Tidak ada model yang cocok"
+              description="Coba cari model yang lain"
               action={
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => { setSearch(""); setSelectedProvider("all"); }}
                 >
-                  Reset Filters
+                  Reset Pencarian
                 </Button>
               }
             />

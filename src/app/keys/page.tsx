@@ -106,7 +106,7 @@ export default function KeysPage() {
         setKeys(data.keys || []);
       }
     } catch {
-      setError("Failed to load API keys");
+      setError("Gagal memuat API key");
     }
 
     setLoading(false);
@@ -137,7 +137,7 @@ export default function KeysPage() {
       });
 
       if (!response.ok) {
-        toast.error("Failed to create key");
+        toast.error("Gagal membuat API key");
         return;
       }
 
@@ -147,9 +147,9 @@ export default function KeysPage() {
       setShowSecret(true);
       setNewKeyName("");
       await fetchKeys();
-      toast.success("API key created");
+      toast.success("Berhasil membuat API key");
     } catch {
-      toast.error("Failed to create API key");
+      toast.error("Gagal membuat API key");
     }
   }, [fetchKeys, newAllModels, newAllowedModels, newExpiresAt, newKeyActive, newKeyName]);
 
@@ -160,15 +160,15 @@ export default function KeysPage() {
       });
 
       if (!response.ok) {
-        toast.error("Failed to delete API key");
+        toast.error("Gagal menghapus API key");
         return;
       }
 
       setConfirmRevoke(null);
       await fetchKeys();
-      toast.success("API key deleted");
+      toast.success("Berhasil menghapus API key");
     } catch {
-      toast.error("Failed to delete API key");
+      toast.error("Gagal menghapus API key");
     }
   }, [fetchKeys]);
 
@@ -182,17 +182,17 @@ export default function KeysPage() {
         });
 
         if (!response.ok) {
-          toast.error("Failed to update key");
+          toast.error("Gagal memperbarui API key");
           return;
         }
 
         await fetchKeys();
         if (updates.name !== undefined) setEditingId(null);
         toast.success(
-          updates.isActive === false ? "API key revoked" : "API key updated"
+          updates.isActive === false ? "API key dihentikan" : "API key diperbarui"
         );
       } catch {
-        toast.error("Failed to update API key");
+        toast.error("Gagal memperbarui API key");
       }
     },
     [fetchKeys]
@@ -236,7 +236,7 @@ export default function KeysPage() {
             <div className="flex items-center justify-between rounded-xl border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
               {error}
               <Button variant="ghost" size="xs" onClick={() => setError("")}>
-                Dismiss
+                Tutup
               </Button>
             </div>
           )}
@@ -346,15 +346,15 @@ function PageHeader({ onCreate }: { onCreate: () => void }) {
     <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
-          <Key className="h-4 w-4 text-primary" /> API Keys
+          <Key className="h-4 w-4 text-primary" /> API Key
         </div>
-        <h1 className="text-3xl font-semibold tracking-tight">API Keys</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">API Key</h1>
         <p className="text-sm text-muted-foreground">
-          Manage your personal API keys for the AI Gateway.
+          Manajemen API key untuk layanan AI Gateway.
         </p>
       </div>
       <Button onClick={onCreate}>
-        <Plus className="h-3.5 w-3.5" /> New Key
+        <Plus className="h-3.5 w-3.5" /> Buat API Key
       </Button>
     </header>
   );
@@ -381,12 +381,12 @@ function BaseUrlCard({
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold">Base URL</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Use this base URL with any OpenAI-compatible SDK:
+              Gunakan base URL ini dengan SDK yang kompatibel dengan OpenAI:
             </p>
             <div className="mt-3 flex items-center gap-2 rounded-xl bg-muted/30 p-3">
               {loaded ? (
                 <>
-                  <code className="flex-1 font-mono text-xs text-primary">
+                  <code className="flex-1 font-mono text-sm text-primary">
                     {baseUrl}
                   </code>
                   <Button variant="ghost" size="icon-sm" onClick={onCopy}>
@@ -430,10 +430,10 @@ function KeysTable({
     return (
       <EmptyState
         icon={Key}
-        title="No API Keys Yet"
-        description="Create your first API key to start using the gateway"
+        title="Belum ada API key yang dibuat"
+        description="Buat API key pertama untuk mulai menggunakan layanan AI Gateway"
         action={
-          <Button onClick={onCreate}>Create API Key</Button>
+          <Button onClick={onCreate}>Buat API Key</Button>
         }
       />
     );
@@ -445,12 +445,12 @@ function KeysTable({
         <Table className="w-full text-sm">
           <TableHeader className="bg-muted/50 text-left text-muted-foreground">
             <TableRow>
-              <TableHead className="px-4 py-3 font-medium">Name</TableHead>
-              <TableHead className="px-4 py-3 font-medium">Key</TableHead>
+              <TableHead className="px-4 py-3 font-medium">Nama</TableHead>
+              <TableHead className="px-4 py-3 font-medium">API Key</TableHead>
               <TableHead className="px-4 py-3 text-center font-medium">Status</TableHead>
-              <TableHead className="px-4 py-3 text-right font-medium">Usage</TableHead>
-              <TableHead className="px-4 py-3 text-right font-medium">Tokens</TableHead>
-              <TableHead className="px-4 py-3 font-medium">Last Used</TableHead>
+              <TableHead className="px-4 py-3 text-right font-medium">Request</TableHead>
+              <TableHead className="px-4 py-3 text-right font-medium">Penggunaan</TableHead>
+              <TableHead className="px-4 py-3 font-medium">Terakhir Digunakan</TableHead>
               <TableHead className="w-24 px-4 py-3" />
             </TableRow>
           </TableHeader>
@@ -472,7 +472,7 @@ function KeysTable({
                   {formatTokens(key.usageCount)}
                 </TableCell>
                 <TableCell className="px-4 py-3 text-right text-xs tabular-nums">
-                  {formatTokens(key.totalTokens)}
+                  {formatTokens(key.totalTokens)} token
                 </TableCell>
                 <TableCell className="px-4 py-3 text-xs text-muted-foreground">
                   {key.lastUsed ? formatDate(key.lastUsed) : "—"}
@@ -483,7 +483,7 @@ function KeysTable({
                       variant="ghost"
                       size="icon-sm"
                       onClick={() => onEdit(key)}
-                      title="Edit name and status"
+                      title="Ubah nama dan status"
                     >
                       <Edit3 className="h-3.5 w-3.5" />
                     </Button>
@@ -492,7 +492,7 @@ function KeysTable({
                       size="icon-sm"
                       className="text-muted-foreground/50 hover:text-destructive"
                       onClick={() => onRevoke(key.id)}
-                      title="Delete"
+                      title="Hapus API key"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
@@ -515,8 +515,8 @@ function StatusBadge({ isActive }: { isActive: boolean }) {
           "h-1.5 w-1.5 rounded-full",
           isActive ? "bg-success" : "bg-muted-foreground"
         )}
-      />
-      {isActive ? "Active" : "Inactive"}
+        />
+      {isActive ? "Aktif" : "Nonaktif"}
     </Badge>
   );
 }
@@ -534,16 +534,16 @@ function QuickStartCard({
   return (
     <details className="group rounded-xl border border-border bg-card p-4">
       <summary className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
-        <Terminal className="h-3.5 w-3.5" /> Quick Start — Copy &amp; Paste
+        <Terminal className="h-3.5 w-3.5" /> Mulai Cepat — Salin &amp; Paste
         <ChevronDown className="ml-auto h-3 w-3 transition-transform group-open:rotate-180" />
       </summary>
       <pre className="mt-4 overflow-x-auto rounded-xl bg-muted/30 p-4 font-mono text-xs leading-relaxed text-muted-foreground">
-{`import OpenAI from "openai";
+        {`import OpenAI from "openai";
 
-const client = new OpenAI({
-  baseURL: "${baseUrl}",
-  apiKey: "${activeKey.key}",
-});`}
+        const client = new OpenAI({
+          baseURL: "${baseUrl}",
+          apiKey: "${activeKey.key}",
+        });`}
       </pre>
     </details>
   );
@@ -588,25 +588,25 @@ function CreateKeyDialog({
 }: CreateKeyDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle className="text-base">Create API Key</DialogTitle>
+          <DialogTitle className="text-base">Buat API Key</DialogTitle>
           <DialogDescription className="text-xs">
-            Create a new personal API key. The secret is shown only once.
+            Buat API key. Kunci rahasia hanya ditampilkan sekali.
           </DialogDescription>
         </DialogHeader>
 
         <DialogBody className="space-y-5">
             <section>
-              <FormSection>General</FormSection>
+              <FormSection>Informasi Umum</FormSection>
               <FormPanel className="space-y-3">
                 <div>
-                  <Label htmlFor="new-key-name">Key Name</Label>
+                  <Label htmlFor="new-key-name">Nama</Label>
                   <Input
                     id="new-key-name"
                     value={keyName}
                     onChange={(event) => onKeyNameChange(event.target.value)}
-                    placeholder="e.g., Production Key"
+                    placeholder="Cth: My API Key"
                     autoFocus
                     className="bg-background"
                   />
@@ -614,14 +614,14 @@ function CreateKeyDialog({
                 <div className="space-y-3">
                   <div className="flex items-center justify-between rounded-lg border border-border p-3">
                     <div>
-                      <Label htmlFor="new-key-expiry-toggle">Set expiration</Label>
-                      <p className="text-xs text-muted-foreground">Automatically disable this key after the selected date.</p>
+                      <Label htmlFor="new-key-expiry-toggle">Atur masa berlaku</Label>
+                      <p className="text-xs text-muted-foreground">Masa berlaku API key ini akan diaktifkan setelah tanggal dipilih</p>
                     </div>
                     <Switch checked={hasExpiry} onChange={onHasExpiryChange} />
                   </div>
                   {hasExpiry && (
                     <div>
-                      <Label htmlFor="new-key-expiry">Expires At</Label>
+                      <Label htmlFor="new-key-expiry">Berlaku hingga</Label>
                       <Input id="new-key-expiry" type="datetime-local" value={expiresAt} onChange={(event) => onExpiresAtChange(event.target.value)} className="bg-background" />
                     </div>
                   )}
@@ -647,13 +647,12 @@ function CreateKeyDialog({
 
           <DialogFooter>
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              Batal
             </Button>
             <Button onClick={onCreate} disabled={!keyName.trim()}>
-              <Sparkles className="h-3.5 w-3.5" /> Create
+              <Sparkles className="h-3.5 w-3.5" /> Buat
             </Button>
           </DialogFooter>
-
       </DialogContent>
     </Dialog>
   );
@@ -697,13 +696,13 @@ function GeneratedKeyDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>API Key Created</DialogTitle>
+          <DialogTitle>API Key Berhasil Dibuat</DialogTitle>
           <DialogDescription>
-            Copy this secret now. It will not be shown again.
+            Kunci rahasia ini hanya ditampilkan sekali. Jangan lupa untuk menyimpannya di tempat aman.
           </DialogDescription>
         </DialogHeader>
         <DialogBody>
-          <div className="rounded-xl border border-warning/30 bg-warning/10 p-3 text-xs">
+          <div className="rounded-md border border-warning/30 bg-warning/10 p-3 text-sm">
             <div className="flex items-center gap-2">
               <code className="min-w-0 flex-1 break-all font-mono">{secret}</code>
               <Button size="icon-sm" variant="ghost" onClick={onCopy}>
@@ -713,7 +712,7 @@ function GeneratedKeyDialog({
           </div>
         </DialogBody>
         <DialogFooter>
-          <Button onClick={() => onOpenChange(false)}>Done</Button>
+          <Button onClick={() => onOpenChange(false)}>Oke</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -740,11 +739,11 @@ function EditKeyDialog({
 }: EditKeyDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle className="text-base">Edit API Key</DialogTitle>
+          <DialogTitle className="text-base">Ubah API Key</DialogTitle>
           <DialogDescription className="text-xs">
-            Update the name and status for this API key.
+            Perbarui nama dan status API key.
           </DialogDescription>
         </DialogHeader>
 
@@ -757,14 +756,15 @@ function EditKeyDialog({
         >
           <DialogBody className="space-y-5">
             <section>
-              <FormSection>General</FormSection>
+              <FormSection>Informasi Umum</FormSection>
               <FormPanel className="space-y-3">
                 <div>
-                  <Label htmlFor="edit-key-name">Key Name</Label>
+                  <Label htmlFor="edit-key-name">Nama</Label>
                   <Input
                     id="edit-key-name"
                     value={keyName}
                     onChange={(event) => onKeyNameChange(event.target.value)}
+                    placeholder="Cth: My API Key"
                     autoFocus
                     className="bg-background"
                   />
@@ -772,14 +772,14 @@ function EditKeyDialog({
                 <div className="space-y-3">
                   <div className="flex items-center justify-between rounded-lg border border-border p-3">
                     <div>
-                      <Label htmlFor="edit-key-expiry-toggle">Set expiration</Label>
-                      <p className="text-xs text-muted-foreground">Automatically disable this key after the selected date.</p>
+                      <Label htmlFor="edit-key-expiry-toggle">Atur masa berlaku</Label>
+                      <p className="text-xs text-muted-foreground">Masa berlaku API key ini akan diaktifkan setelah tanggal dipilih</p>
                     </div>
                     <Switch checked={hasExpiry} onChange={onHasExpiryChange} />
                   </div>
                   {hasExpiry && (
                     <div>
-                      <Label htmlFor="edit-key-expiry">Expires At</Label>
+                      <Label htmlFor="edit-key-expiry">Berlaku hingga</Label>
                       <Input id="edit-key-expiry" type="datetime-local" value={expiresAt} onChange={(event) => onExpiresAtChange(event.target.value)} className="bg-background" />
                     </div>
                   )}
@@ -809,10 +809,10 @@ function EditKeyDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              Batal
             </Button>
             <Button type="submit" disabled={!keyName.trim()}>
-              <Check className="h-3.5 w-3.5" /> Save Changes
+              <Check className="h-3.5 w-3.5" /> Simpan Perubahan
             </Button>
           </DialogFooter>
         </form>
@@ -846,9 +846,9 @@ function ModelAccessField({
   return (
     <div className="space-y-3">
       <div>
-        <Label>Model Access</Label>
+        <Label>Akses Model</Label>
         <p className="text-xs text-muted-foreground">
-          Choose which models this API key can use.
+          Pilih model yang boleh digunakan oleh API Key.
         </p>
       </div>
       <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-border p-3">
@@ -858,15 +858,15 @@ function ModelAccessField({
           onChange={(event) => onAllModelsChange(event.target.checked)}
           className="h-4 w-4 accent-primary"
         />
-        <span className="text-sm font-medium">Allow all models</span>
+        <span className="text-sm font-medium">Semua Model diizinkan</span>
       </label>
       {!allModels && (
         <div className="space-y-2 rounded-lg border border-border p-3">
           <p className="text-xs font-medium text-muted-foreground">
-            Select allowed models
+            Pilih model yang boleh digunakan oleh API key
           </p>
           {models.length === 0 ? (
-            <p className="text-xs text-muted-foreground">No active models available.</p>
+            <p className="text-xs text-muted-foreground">Tidak ada model yang aktif.</p>
           ) : (
             models.map((model) => (
               <label
@@ -908,7 +908,7 @@ function StatusField({
       <div>
         <Label>Status</Label>
         <p className="text-xs text-muted-foreground">
-          Allow this key to make requests.
+          Izinkan API Key ini memanggil model.
         </p>
       </div>
       <Switch checked={isActive} onChange={onChange} />
@@ -931,18 +931,18 @@ function RevokeKeyDialog({
         <DialogHeader>
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-destructive" />
-            <DialogTitle>Delete API Key</DialogTitle>
+            <DialogTitle>Hapus API Key</DialogTitle>
           </div>
           <DialogDescription>
-            This permanently deletes this key and its usage history. Services using it will stop working.
+            Hapus API Key ini akan menghapus semua data penggunaan dan layanan yang menggunakan API Key ini akan berhenti.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            Batal
           </Button>
           <Button variant="destructive" onClick={onConfirm}>
-            <Trash2 className="h-3.5 w-3.5" /> Delete
+            <Trash2 className="h-3.5 w-3.5" /> Hapus
           </Button>
         </DialogFooter>
       </DialogContent>

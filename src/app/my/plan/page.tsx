@@ -110,7 +110,7 @@ function TokenBar({ used, max }: { used: number; max: number }) {
 
       <div className="flex items-center justify-between gap-3 text-sm">
         <span className="text-muted-foreground">
-          Terpakai <span className="font-medium tabular-nums text-foreground">{fmtNumber(used)}</span>
+          Terpakai <span className="font-medium tabular-nums text-foreground">{fmtNumber(used)}</span> token
         </span>
         <span className="text-muted-foreground">
           Sisa <span className="font-semibold tabular-nums text-foreground">{fmtNumber(remaining)}</span> token
@@ -150,11 +150,11 @@ export default function MyPlanPage() {
     void (async () => {
       try {
         const res = await fetch("/api/user/plans");
-        if (!res.ok) throw new Error((await res.json().catch(() => null))?.error || "Failed to load");
+        if (!res.ok) throw new Error((await res.json().catch(() => null))?.error || "Gagal memuat data");
         const json = (await res.json()) as MyPlanData;
         setData({ packages: json.packages ?? [], balance: json.balance ?? 0 });
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed to load your plan");
+        setError(e instanceof Error ? e.message : "Gagal memuat data paket token");
       } finally {
         setLoading(false);
       }
@@ -168,13 +168,13 @@ export default function MyPlanPage() {
           <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
-                <Coins className="h-4 w-4 text-primary" /> Token Plan
+                <Coins className="h-4 w-4 text-primary" /> My Package
               </div>
-              <h1 className="text-3xl font-bold tracking-tight">My Plan</h1>
+              <h1 className="text-3xl font-bold tracking-tight">Paket Saya</h1>
               <p className="text-sm text-muted-foreground">Paket token dan saldo Anda.</p>
             </div>
             <Link href="/plan" className={cn(buttonVariants(), "gap-2")}>
-              <CreditCard className="h-4 w-4" /> Beli Token
+              <CreditCard className="h-4 w-4" /> Beli Paket
             </Link>
           </header>
 
@@ -223,7 +223,7 @@ export default function MyPlanPage() {
                     </div>
                     <div className="mt-3 text-3xl font-semibold tabular-nums">{formatCurrency(data!.balance)}</div>
                     <Link href="/my/wallet" className={cn(buttonVariants({ variant: "link", size: "sm" }), "gap-1 px-0 text-xs")}>
-                      Top up <ArrowRight className="h-3 w-3" />
+                      Isi saldo <ArrowRight className="h-3 w-3" />
                     </Link>
                   </CardContent>
                 </Card>
@@ -250,10 +250,10 @@ export default function MyPlanPage() {
                   <EmptyState
                     icon={Coins}
                     title="Belum ada paket token"
-                    description="Beli dari halaman Token Plan untuk mulai memakai langganan token."
+                    description="Beli paket token dari halaman daftar paket untuk mulai memakai langganan token."
                     action={
                       <Link href="/plan" className={cn(buttonVariants({ size: "sm" }), "gap-1.5")}>
-                        <Coins className="h-3.5 w-3.5" /> Lihat paket
+                        <Coins className="h-3.5 w-3.5" /> Beli Paket
                       </Link>
                     }
                   />

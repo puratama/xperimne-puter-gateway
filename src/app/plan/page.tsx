@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import {
-  Crown, Coins, RefreshCw, Wallet, Check, X,
-  Gauge, Image as ImageIcon, ArrowUpRight,
+  Crown, Coins, RefreshCw, Wallet, Check, X, ArrowUpRight,
 } from "lucide-react";
 import AppShell from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
@@ -36,8 +35,6 @@ interface CatalogPlan {
   };
 }
 
-const fmtNumber = (n: number) => new Intl.NumberFormat("id-ID").format(n);
-
 const billingLabel = (period: string) => {
   switch (period) {
     case "daily":
@@ -50,21 +47,6 @@ const billingLabel = (period: string) => {
       return "1 bulan";
   }
 };
-
-function FeatureRow({ icon, label, enabled }: { icon: React.ReactNode; label: string; enabled: boolean }) {
-  return (
-    <div className="flex items-center justify-between gap-2 text-xs">
-      <span className="flex items-center gap-1.5 text-muted-foreground">
-        {icon} {label}
-      </span>
-      {enabled ? (
-        <Check className="h-3.5 w-3.5 shrink-0 text-success" />
-      ) : (
-        <X className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40" />
-      )}
-    </div>
-  );
-}
 
 export default function PlanPage() {
   const router = useRouter();
@@ -92,11 +74,11 @@ export default function PlanPage() {
     setError("");
     try {
       const res = await fetch("/api/plans");
-      if (!res.ok) throw new Error("Failed to load plans");
+      if (!res.ok) throw new Error("Gagal memuat paket");
       const json = (await res.json()) as { plans?: CatalogPlan[] };
       setPlans(json.plans ?? []);
     } catch {
-      setError("Failed to load plans");
+      setError("Gagal memuat paket");
     }
     setLoading(false);
   };
@@ -117,7 +99,7 @@ export default function PlanPage() {
         throw new Error(getApiErrorMessage(err, "Gagal membeli paket"));
 
       }
-      toast.success("Paket berhasil dibeli.");
+      toast.success("Berhasil membeli paket");
       await loadBalance();
       router.push("/my/plan");
     } catch (e) {
@@ -136,7 +118,7 @@ export default function PlanPage() {
           <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
-                <Crown className="h-4 w-4 text-primary" /> Token Plan
+                <Crown className="h-4 w-4 text-primary" /> Package
               </div>
               <h1 className="text-3xl font-bold tracking-tight">Paket Token</h1>
               <p className="text-sm text-muted-foreground">Pilih paket token, bayar dari saldo wallet.</p>
@@ -146,7 +128,7 @@ export default function PlanPage() {
                 <Wallet className="h-4 w-4" /> Saldo: {formatCurrency(balance)}
               </span>
               <Link href="/my/wallet">
-                <Button variant="outline" size="sm">Top up</Button>
+                <Button variant="outline" size="sm">Isi saldo</Button>
               </Link>
               <Button variant="outline" size="sm" onClick={() => void loadCatalog()}>
                 <RefreshCw className="h-3.5 w-3.5" /> Refresh
@@ -175,10 +157,10 @@ export default function PlanPage() {
             <EmptyState
               icon={Coins}
               title="Belum ada paket tersedia"
-              description="Belum ada paket token yang aktif dijual. Admin sedang menyiapkan paket — coba lagi nanti."
+              description="Belum ada paket token. Admin sedang menyiapkan paket — coba lagi nanti."
               action={
                 <Button variant="outline" size="sm" onClick={() => void loadCatalog()}>
-                  <RefreshCw className="h-3.5 w-3.5" /> Muat ulang
+                  <RefreshCw className="h-3.5 w-3.5" /> Refresh
                 </Button>
               }
             />
@@ -230,7 +212,7 @@ export default function PlanPage() {
                         disabled={buying !== null}
                         onClick={() => setConfirmPlan(plan)}
                       >
-                        Pilih Plan <ArrowUpRight />
+                        Pilih Paket <ArrowUpRight />
                       </Button>
                     </div>
                   </Card>
@@ -246,14 +228,23 @@ export default function PlanPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Konfirmasi Pembelian</DialogTitle>
-            <DialogDescription>
+            {/* <DialogDescription>
               Beli paket <span className="font-medium text-foreground">{confirmPlan?.name}</span> seharga{" "}
               <span className="font-medium text-foreground">
                 {confirmPlan?.price === 0 ? "Gratis" : formatCurrency(confirmPlan?.price ?? 0)}
               </span>
               ? Biaya akan dipotong langsung dari saldo wallet kamu (saldo saat ini: {formatCurrency(balance)}).
-            </DialogDescription>
+            </DialogDescription> */}
           </DialogHeader>
+          <div className="px-6 py-4">
+            <p>
+              Beli paket{" "}
+              <span>{confirmPlan?.name}</span>{" "}
+              seharga{" "}
+              <span>{formatCurrency(confirmPlan?.price ?? 0)}</span>
+              ? Biaya akan dipotong langsung dari saldo wallet kamu (saldo saat ini: {formatCurrency(balance)}).
+            </p>
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmPlan(null)}>Batal</Button>
             <Button

@@ -60,7 +60,7 @@ declare global {
 const presets = [10000, 25000, 50000, 100000, 250000];
 
 const BILLING_TYPE_LABELS: Record<string, string> = {
-  topup: "Top up saldo",
+  topup: "Isi saldo",
   package_purchase: "Pembelian paket",
 };
 
@@ -139,7 +139,7 @@ export default function WalletPage() {
 
   const loadBalance = useCallback(async () => {
     const response = await fetch("/api/wallet/balance");
-    if (!response.ok) throw new Error("Failed to load wallet balance.");
+    if (!response.ok) throw new Error("Gagal memuat saldo wallet.");
     const data = (await response.json()) as BalanceResponse;
     setBalance(data.balance);
   }, []);
@@ -170,7 +170,7 @@ export default function WalletPage() {
       try {
         await loadBalance();
       } catch (err) {
-        if (active) setError(err instanceof Error ? err.message : "Failed to load wallet.");
+        if (active) setError(err instanceof Error ? err.message : "Gagal memuat saldo wallet.");
       } finally {
         if (active) setLoading(false);
       }
@@ -192,7 +192,7 @@ export default function WalletPage() {
 
   async function handleTopup() {
     if (!Number.isFinite(numericAmount) || numericAmount < 10000) {
-      setMessage("Enter at least Rp10.000.");
+      setMessage("Pilih jumlah pembayaran minimal Rp10.000.");
       return;
     }
 
@@ -208,13 +208,13 @@ export default function WalletPage() {
       });
       if (!response.ok) {
         const err = await response.json().catch(() => null);
-        throw new Error(getApiErrorMessage(err, "Failed to start top up."));
+        throw new Error(getApiErrorMessage(err, "Gagal memulai isi saldo."));
       }
 
       const data = (await response.json()) as TopupResponse;
 
       if (!data.transaction) {
-        toast.error("No payment session returned. Please try again.");
+        toast.error("Tidak ada sesi pembayaran. Silakan coba lagi.");
         return;
       }
 
@@ -234,14 +234,14 @@ export default function WalletPage() {
       }
 
       if (provider === "xendit") {
-        if (!redirectUrl) throw new Error("Missing Xendit checkout URL.");
+        if (!redirectUrl) throw new Error("Gagal memuat URL Xendit checkout.");
         window.location.href = redirectUrl;
         return;
       }
 
       // Midtrans Snap
       if (!window.snap || !snapReady) {
-        setMessage("Payment window is still loading. Please wait a moment and try again.");
+        setMessage("Jendela pembayaran masih loading. Silakan tunggu sebentar dan coba lagi.");
         return;
       }
 
@@ -252,7 +252,7 @@ export default function WalletPage() {
         onClose: () => goToCallback("cancelled", orderId, "midtrans"),
       });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to start top up.");
+      toast.error(err instanceof Error ? err.message : "Gagal memulai isi saldo.");
     } finally {
       setTopupLoading(false);
     }
@@ -264,7 +264,7 @@ export default function WalletPage() {
     try {
       await Promise.all([loadBalance(), loadBilling()]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load wallet.");
+      setError(err instanceof Error ? err.message : "Gagal memuat saldo wallet.");
     } finally {
       setLoading(false);
     }
@@ -278,11 +278,11 @@ export default function WalletPage() {
     try {
       const res = await fetch("/api/wallet/topup/upload", { method: "POST", body: fd });
       const data = await res.json();
-      if (!res.ok) throw new Error(getApiErrorMessage(data, "Upload gagal"));
+      if (!res.ok) throw new Error(getApiErrorMessage(data, "Gagal upload bukti pembayaran"));
       setProofImage(data.url);
-      toast.success("Bukti transfer diupload");
+      toast.success("Bukti pembayaran diupload.");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Upload gagal");
+      toast.error(err instanceof Error ? err.message : "Gagal upload bukti pembayaran.");
     }
     setUploading(false);
   }
@@ -307,13 +307,13 @@ export default function WalletPage() {
       }
       const data = await response.json();
       if (data.status === "paid") {
-        toast.success("Balance updated");
+        toast.success("Saldo Anda telah diperbarui.");
         setBalance(data.balance ?? balance);
         setQrisPayment(null);
         await loadBilling();
       } else if (data.status === "pending_confirmation") {
         setSubmitted(true);
-        setMessage("Pembayaran diterima. Saldo akan masuk setelah admin memverifikasi bukti transfer Anda.");
+        setMessage("Pembayaran diterima. Saldo akan masuk setelah admin memverifikasi bukti pembayaran Anda.");
       } else {
         setMessage("Pembayaran belum terkonfirmasi. Jika sudah membayar, coba lagi dalam beberapa saat.");
       }
@@ -331,10 +331,10 @@ export default function WalletPage() {
           <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
-                <Wallet className="h-4 w-4 text-primary" /> Wallet
+                <Wallet className="h-4 w-4 text-primary" /> My Wallet
               </div>
-              <h1 className="text-3xl font-bold tracking-tight">My Wallet</h1>
-              <p className="text-sm text-muted-foreground">Add balance to keep your API usage running.</p>
+              <h1 className="text-3xl font-bold tracking-tight">Wallet Saya</h1>
+              <p className="text-sm text-muted-foreground">Wallet Anda untuk mengelola saldo dan transaksi.</p>
             </div>
             <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading} className="cursor-pointer">
               <RefreshCw className={cn("mr-1.5 h-3.5 w-3.5", loading && "animate-spin")} /> Refresh
@@ -344,7 +344,7 @@ export default function WalletPage() {
           <Card>
             <CardContent className="p-5">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Wallet className="h-4 w-4 text-info" /> Current balance
+                <Wallet className="h-4 w-4 text-info" /> Saldo saat ini
               </div>
               {loading ? (
                 <div className="mt-3">
@@ -361,7 +361,7 @@ export default function WalletPage() {
           <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
             <Card>
               <CardContent className="p-5">
-                <h2 className="text-lg font-semibold">Choose amount</h2>
+                <h2 className="text-lg font-semibold">Pilih jumlah pembayaran</h2>
                 <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
                   {presets.map((value) => (
                     <Button
@@ -378,7 +378,7 @@ export default function WalletPage() {
                     </Button>
                   ))}
                 </div>
-                <Label htmlFor="custom-amount" className="mt-5">Custom amount</Label>
+                <Label htmlFor="custom-amount" className="mt-5">Jumlah pembayaran kustom</Label>
                 <Input
                   id="custom-amount"
                   inputMode="numeric"
@@ -393,14 +393,14 @@ export default function WalletPage() {
                 />
                 <Button className="mt-5 h-11 w-full" onClick={handleTopup} disabled={topupLoading || loading}>
                   <Plus className="h-4 w-4" />
-                  {topupLoading ? "Starting payment..." : "Top Up"}
+                  {topupLoading ? "Memulai pembayaran..." : "Isi saldo"}
                 </Button>
               </CardContent>
             </Card>
 
             <Card>
               <CardContent className="p-5">
-                <h2 className="text-lg font-bold tracking-tight">Recent transactions</h2>
+                <h2 className="text-lg font-bold tracking-tight">Riwayat Transaksi</h2>
                 <div className="mt-4 space-y-3">
                   {billingLoading ? (
                     <div className="space-y-3">
@@ -419,13 +419,13 @@ export default function WalletPage() {
                     </div>
                   ) : null}
                   {!billingLoading && billing.length === 0 ? (
-                    <EmptyState icon={ReceiptText} title="No recent transactions yet." />
+                    <EmptyState icon={ReceiptText} title="Tidak ada transaksi." />
                   ) : null}
                   {billing.slice(0, 5).map((item, index) => (
                     <div key={item.id ?? item.midtransOrderId ?? `${item.createdAt}-${index}`} className="rounded-lg border border-border bg-muted/40 p-4">
                       <div className="flex items-center justify-between gap-3">
                         <div>
-                          <p className="text-sm font-medium">{item.type ? (BILLING_TYPE_LABELS[item.type] ?? "Transaksi") : "Top up saldo"}</p>
+                          <p className="text-sm font-medium">{item.type ? (BILLING_TYPE_LABELS[item.type] ?? "Lainnya") : "Isi saldo"}</p>
                           <p className="mt-1 text-xs text-muted-foreground">{formatDateTime(item.createdAt)}</p>
                         </div>
                         <div className="text-right">
@@ -469,10 +469,10 @@ export default function WalletPage() {
                   <div className="flex h-14 w-14 items-center justify-center rounded-full bg-success/10">
                     <CheckCircle2 className="h-7 w-7 text-success" />
                   </div>
-                  <h3 className="text-base font-semibold">Bukti Pembayaran Terkirim</h3>
+                  <h3 className="text-base font-semibold">Konfirmasi Pembayaran</h3>
                   <p className="text-sm text-muted-foreground">
                     {message ||
-                      "Bukti pembayaran diterima. Admin akan memverifikasi bukti transfer Anda. Saldo masuk setelah disetujui."}
+                      "Bukti pembayaran diterima. Admin akan memverifikasi bukti pembayaran Anda. Saldo masuk setelah disetujui."}
                   </p>
                   <Button className="mt-2 w-full" onClick={() => setQrisPayment(null)}>
                     Tutup
@@ -481,7 +481,7 @@ export default function WalletPage() {
               ) : qrisPayment && (
                 <div className="flex flex-col items-center gap-3">
                   <div className="flex w-full items-center justify-between text-xs">
-                    <span className="font-medium">{qrisPayment.merchantName ?? "Merchant"}</span>
+                    <span className="font-medium">{qrisPayment.merchantName ?? "Pembayaran Merchant"}</span>
                     <Badge variant={qrisExpired ? "destructive" : "secondary"} size="sm">
                       <Clock className="h-3 w-3" />
                       {qrisExpired ? "Kedaluwarsa" : qrisRemaining}
@@ -501,19 +501,19 @@ export default function WalletPage() {
                   </div>
                   <a
                     href={qrisPayment.qrDataUrl}
-                    download={`QRIS-${(qrisPayment.merchantName ?? "Merchant").replace(/\s+/g, "-")}-${qrisPayment.amount}.png`}
+                    download={`QRIS-${(qrisPayment.merchantName ?? "Pembayaran Merchant").replace(/\s+/g, "-")}-${qrisPayment.amount}.png`}
                     className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border px-3 py-2 text-sm text-foreground hover:bg-muted"
                   >
                     <Download className="h-4 w-4" /> Download
                   </a>
                   {qrisExpired ? (
                     <p className="text-xs text-destructive">
-                      QR telah kedaluwarsa. Tutup lalu buat ulang top-up.
+                      QR telah kedaluwarsa. Tutup lalu buat ulang isi saldo.
                     </p>
                   ) : (
                     <>
                       <div className="w-full space-y-2 rounded-lg border border-border bg-muted/30 p-3 text-left">
-                        <Label className="text-xs">Bukti transfer (opsional)</Label>
+                        <Label className="text-xs">Bukti pembayaran (opsional)</Label>
                         <div
                           role="button"
                           tabIndex={0}
@@ -530,7 +530,7 @@ export default function WalletPage() {
                             <>
                               <ImageIcon className="h-4 w-4 text-muted-foreground/60" />
                               <span className="text-xs text-muted-foreground">
-                                {uploading ? "Mengupload..." : "Klik untuk upload screenshot"}
+                                {uploading ? "Mengupload..." : "Upload bukti pembayaran"}
                               </span>
                             </>
                           )}
@@ -555,7 +555,7 @@ export default function WalletPage() {
                         />
                       </div>
                       <p className="w-full text-center text-xs text-muted-foreground">
-                        Pastikan Anda sudah membayar sebelum mengirim konfirmasi.
+                        Pastikan pembayaran Anda telah dilakukan sebelum mengirim konfirmasi.
                       </p>
                       <Button className="w-full" onClick={handleQrisConfirm} disabled={confirmLoading}>
                         {confirmLoading ? (
@@ -563,7 +563,7 @@ export default function WalletPage() {
                             <RefreshCw className="h-4 w-4 animate-spin motion-reduce:animate-none" /> Memverifikasi...
                           </>
                         ) : (
-                          "Saya Sudah Bayar"
+                          "Konfirmasi Pembayaran"
                         )}
                       </Button>
                     </>

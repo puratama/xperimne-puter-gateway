@@ -127,12 +127,12 @@ function ProfileTab({ onProvider }: { onProvider?: (p: string) => void }) {
       {/* Editable fields */}
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="settings-name">Nama Tampilan</Label>
+          <Label htmlFor="settings-name">Nama</Label>
           <Input
             id="settings-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Nama Tampilan"
+            placeholder="Masukkan nama"
             className="bg-background"
           />
         </div>
@@ -557,7 +557,7 @@ export default function SettingsPage() {
           <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
-                <SettingsIcon className="h-4 w-4 text-primary" /> Pengaturan
+                <SettingsIcon className="h-4 w-4 text-primary" /> Setting
               </div>
               <h1 className="text-3xl font-bold tracking-tight">Pengaturan</h1>
               <p className="text-sm text-muted-foreground">Pengaturan akun dan keamanan Anda.</p>
