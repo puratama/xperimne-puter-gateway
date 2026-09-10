@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import AuthBrand from "@/components/auth/AuthBrand";
 import { getApiErrorMessage } from "@/lib/api-error";
+import { evaluatePassword, PasswordStrengthMeter } from "@/components/ui/password-validation";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -30,11 +31,16 @@ export default function ResetPasswordPage() {
     setError("");
 
     if (password.length < 8) {
-      setError("Password minimal 8 karakter");
+      setError("Kata sandi minimal 8 karakter");
+      return;
+    }
+    const criteria = evaluatePassword(password);
+    if (!criteria.every((c) => c.met)) {
+      setError("Kata sandi belum memenuhi semua kriteria");
       return;
     }
     if (password !== confirm) {
-      setError("Konfirmasi password tidak cocok");
+      setError("Konfirmasi kata sandi tidak cocok");
       return;
     }
     if (!token) {
@@ -51,13 +57,13 @@ export default function ResetPasswordPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(getApiErrorMessage(data, "Gagal reset password"));
+        throw new Error(getApiErrorMessage(data, "Gagal reset kata sandi"));
       }
-      toast.success(data.message || "Password berhasil diubah.");
+      toast.success(data.message || "Kata sandi berhasil diubah.");
       router.push("/login");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal reset password");
-      toast.error(err instanceof Error ? err.message : "Gagal reset password");
+      setError(err instanceof Error ? err.message : "Gagal reset kata sandi");
+      toast.error(err instanceof Error ? err.message : "Gagal reset kata sandi");
     } finally {
       setLoading(false);
     }
@@ -70,8 +76,8 @@ export default function ResetPasswordPage() {
 
         <Card className="border-border bg-card/95 shadow-2xl shadow-primary/10">
           <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl">Reset password</CardTitle>
-            <p className="text-sm text-muted-foreground">Buat password baru untuk akun kamu</p>
+            <CardTitle className="text-2xl">Reset kata sandi</CardTitle>
+            <p className="text-sm text-muted-foreground">Buat kata sandi baru untuk akun kamu</p>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -82,7 +88,7 @@ export default function ResetPasswordPage() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password baru</Label>
+                <Label htmlFor="password">Kata sandi baru</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
@@ -93,7 +99,6 @@ export default function ResetPasswordPage() {
                     placeholder="••••••••"
                     className="pl-9 pr-10 h-11 bg-background"
                     required
-                    minLength={8}
                     autoComplete="new-password"
                   />
                   <Button
@@ -102,16 +107,27 @@ export default function ResetPasswordPage() {
                     size="icon-sm"
                     onClick={() => setShow(!show)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    aria-label={show ? "Sembunyikan password" : "Tampilkan password"}
+                    aria-label={show ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
                   >
                     {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground">Minimal 8 karakter</p>
+                {password && (
+                  <>
+                    <PasswordStrengthMeter score={evaluatePassword(password).filter((c) => c.met).length} />
+                    <div className="space-y-1">
+                      {evaluatePassword(password).map((c) => (
+                        <p key={c.id} className={`text-xs ${c.met ? "text-success" : "text-muted-foreground"}`}>
+                          {c.met ? "✓" : "○"} {c.label}
+                        </p>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirm">Konfirmasi password</Label>
+                <Label htmlFor="confirm">Konfirmasi kata sandi</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
@@ -129,7 +145,7 @@ export default function ResetPasswordPage() {
               </div>
 
               <Button type="submit" size="lg" className="w-full" disabled={loading}>
-                {loading ? "Menyimpan..." : "Reset password"}
+                {loading ? "Menyimpan..." : "Reset kata sandi"}
                 {!loading && <ArrowRight className="w-4 h-4 ml-2" />}
               </Button>
             </form>

@@ -49,7 +49,7 @@ function LoginPageInner() {
       if (!res.ok) {
         // 403 = email belum diverifikasi → tawarkan kirim ulang
         if (res.status === 403) setNeedsVerification(true);
-        throw new Error(getApiErrorMessage(data, "Login failed"))
+        throw new Error(getApiErrorMessage(data, "Login gagal"))
       }
 
       localStorage.setItem("xperimne-api-key", typeof data.apiKey === "string" ? data.apiKey : data.apiKey?.key || "");
@@ -139,7 +139,7 @@ function LoginPageInner() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Kata sandi</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
@@ -158,7 +158,7 @@ function LoginPageInner() {
                     size="icon-sm"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
+                    aria-label={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </Button>
@@ -167,7 +167,7 @@ function LoginPageInner() {
 
               <div className="flex justify-end">
                 <Link href="/forgot-password" className="text-sm text-primary hover:underline font-medium">
-                  Lupa password?
+                  Lupa kata sandi?
                 </Link>
               </div>
 

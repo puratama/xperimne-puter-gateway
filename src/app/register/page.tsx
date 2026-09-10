@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import AuthBrand from "@/components/auth/AuthBrand";
 import { getApiErrorMessage } from "@/lib/api-error";
+import { evaluatePassword, PasswordStrengthMeter } from "@/components/ui/password-validation";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -45,6 +46,13 @@ export default function RegisterPage() {
     setLoading(true);
     setError("");
 
+    const criteria = evaluatePassword(password);
+    if (!criteria.every((c) => c.met)) {
+      setError("Kata sandi belum memenuhi semua kriteria");
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
@@ -53,13 +61,14 @@ export default function RegisterPage() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(getApiErrorMessage(data, "Registration failed"));
+      if (!res.ok) throw new Error(getApiErrorMessage(data, "Pendaftaran gagal"));
 
       // Don't auto-login — user must verify email first
       setRegistered(true);
+      toast.success(data.message || "Pendaftaran berhasil. Cek email untuk verifikasi.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Registration failed");
-      toast.error(err instanceof Error ? err.message : "Registration failed");
+      setError(err instanceof Error ? err.message : "Pendaftaran gagal");
+      toast.error(err instanceof Error ? err.message : "Pendaftaran gagal");
     } finally {
       setLoading(false);
     }
@@ -109,7 +118,7 @@ export default function RegisterPage() {
         <Card className="bg-card ring-1 ring-border/40">
           <CardHeader className="space-y-1 text-center">
             <CardTitle className="text-2xl font-bold tracking-tight">Buat akun</CardTitle>
-            <p className="text-sm text-muted-foreground">Mulai bangun dengan 500+ model AI</p>
+            <p className="text-sm text-muted-foreground">Gateway AI satu pintu untuk semua model</p>
           </CardHeader>
           <CardContent>
             <Button
@@ -173,7 +182,7 @@ export default function RegisterPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Kata sandi</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
@@ -184,7 +193,6 @@ export default function RegisterPage() {
                     placeholder="••••••••"
                     className="pl-9 pr-10 bg-background"
                     required
-                    minLength={8}
                     autoComplete="new-password"
                   />
                   <Button
@@ -193,12 +201,23 @@ export default function RegisterPage() {
                     size="icon-sm"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
+                    aria-label={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground">Minimal 8 karakter</p>
+                {password && (
+                  <>
+                    <PasswordStrengthMeter score={evaluatePassword(password).filter((c) => c.met).length} />
+                    <div className="space-y-1">
+                      {evaluatePassword(password).map((c) => (
+                        <p key={c.id} className={`text-xs ${c.met ? "text-success" : "text-muted-foreground"}`}>
+                          {c.met ? "✓" : "○"} {c.label}
+                        </p>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
 
               <Button type="submit" size="lg" className="w-full" disabled={loading}>

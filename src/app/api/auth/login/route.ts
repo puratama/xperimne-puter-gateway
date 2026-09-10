@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     }
 
     const role = user.role === "superadmin" ? "superadmin" : "user";
-    await createSession({ sub: user.id, email: user.email, role, status: user.status as "active" | "suspended" | "banned" });
+    await createSession({ sub: user.id, name: user.name ?? "", email: user.email, role, status: user.status as "active" | "suspended" | "banned" });
 
     return NextResponse.json({
       user: { id: user.id, email: user.email, name: user.name, role, status: user.status },

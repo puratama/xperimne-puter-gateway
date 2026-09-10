@@ -155,7 +155,7 @@ export async function GET(request: NextRequest) {
     // 1) Find by providerId (already linked Google account)
     let user = await prisma.user.findUnique({
       where: { providerId: googleSub },
-      select: { id: true, email: true, role: true, status: true, provider: true, passwordHash: true },
+      select: { id: true, name: true, email: true, role: true, status: true, provider: true, passwordHash: true },
     });
 
     // 2) If not found, find by email (auto-link existing email account)
@@ -183,7 +183,7 @@ export async function GET(request: NextRequest) {
               avatar: avatar || undefined,
               emailVerified: emailVerified ? new Date() : undefined,
             },
-            select: { id: true, email: true, role: true, status: true, provider: true, passwordHash: true },
+            select: { id: true, name: true, email: true, role: true, status: true, provider: true, passwordHash: true },
           });
         } else {
           return NextResponse.redirect(`${baseUrl}/login?error=google_account_conflict`);
@@ -200,7 +200,7 @@ export async function GET(request: NextRequest) {
             emailVerified: emailVerified ? new Date() : null,
             wallet: { create: { balance: 0 } },
           },
-          select: { id: true, email: true, role: true, status: true, provider: true, passwordHash: true },
+          select: { id: true, name: true, email: true, role: true, status: true, provider: true, passwordHash: true },
         });
       }
     }
@@ -217,6 +217,7 @@ export async function GET(request: NextRequest) {
     // Create session
     await createSession({
       sub: user.id,
+      name: user.name ?? "",
       email: user.email,
       role: user.role as "user" | "superadmin",
       status: user.status as "active" | "suspended" | "banned",

@@ -401,7 +401,6 @@ export default function LandingPage() {
               {[
                 ["Pusat Bantuan", "/support"],
                 ["Usage & Tagihan", "/usage"],
-                ["Hubungi Kami", "mailto:hello@xperimne.com"],
               ].map(([label, href]) => (
                 <li key={label}>
                   {href.startsWith("mailto:") ? (
