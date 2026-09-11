@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSuperadmin } from "@/lib/admin-auth";
 import { prisma } from "@/lib/db";
+import { fetchUpstream, normalizeBaseUrl } from "@/lib/upstream";
 
 interface AggregatorModel {
   id: string;
@@ -36,24 +37,39 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "API key not configured for this aggregator" }, { status: 500 });
     }
 
+    let baseUrl: string;
+    try {
+      baseUrl = normalizeBaseUrl(agg.baseUrl);
+    } catch (e) {
+      return NextResponse.json(
+        { error: e instanceof Error ? e.message : "Base URL tidak valid" },
+        { status: 400 }
+      );
+    }
+
     // Fetch models from aggregator (OpenAI-compatible /models endpoint)
-    const modelsRes = await fetch(`${agg.baseUrl}/models`, {
+    const result = await fetchUpstream(`${baseUrl}/models`, {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      signal: AbortSignal.timeout(15000),
+      timeoutMs: 20_000,
+      retries: 1,
     });
 
-    if (!modelsRes.ok) {
-      const errorBody = await modelsRes.text().catch(() => "");
+    if (!result.response) {
+      return NextResponse.json({ error: result.error }, { status: 504 });
+    }
+
+    if (!result.ok) {
+      const errorBody = await result.response.text().catch(() => "");
       return NextResponse.json({
-        error: `Aggregator returned ${modelsRes.status}: ${errorBody.slice(0, 200) || modelsRes.statusText}`,
+        error: `Aggregator returned ${result.status}: ${errorBody.slice(0, 200) || result.response.statusText}`,
       }, { status: 502 });
     }
 
-    const data = await modelsRes.json().catch(() => ({}));
+    const data = await result.response.json().catch(() => ({}));
 
     // Handle both OpenAI-compatible format ({data: [...]}) and flat array format
     const rawModels: unknown[] = Array.isArray(data) ? data : (data?.data ?? data?.models ?? []);
@@ -83,9 +99,6 @@ export async function GET(request: NextRequest) {
       alreadyConfigured: models.filter((m) => existingIds.has(m.id)).length,
     });
   } catch (error: unknown) {
-    if (error instanceof Error && error.name === "TimeoutError") {
-      return NextResponse.json({ error: "Connection to aggregator timed out (15s)" }, { status: 504 });
-    }
     return NextResponse.json({ error: error instanceof Error ? error.message : "Internal server error" }, { status: 500 });
   }
 }

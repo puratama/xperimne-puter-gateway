@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSuperadmin } from "@/lib/admin-auth";
 import { prisma } from "@/lib/db";
+import { fetchUpstream, normalizeBaseUrl } from "@/lib/upstream";
 
 /**
  * POST /api/admin/aggregators/test
@@ -24,51 +25,56 @@ export async function POST(request: NextRequest) {
 
     const apiKey = agg.apiKeyEnc;
     if (!apiKey) {
-      return NextResponse.json({ ok: false, error: "API key not configured for this aggregator" }, { status: 500 });
+      return NextResponse.json({ ok: false, status: 0, latency: 0, error: "API key belum dikonfigurasi untuk provider ini" });
     }
 
-    const startTime = Date.now();
-
+    let baseUrl: string;
     try {
-      // Test with a lightweight models list request
-      const testRes = await fetch(`${agg.baseUrl}/models`, {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        signal: AbortSignal.timeout(10000),
-      });
-
-      const latency = Date.now() - startTime;
-
-      if (testRes.ok) {
-        const data = await testRes.json().catch(() => null);
-        const modelCount = data?.data?.length ?? data?.models?.length ?? null;
-        return NextResponse.json({
-          ok: true,
-          status: testRes.status,
-          latency,
-          modelCount,
-        });
-      } else {
-        const errorBody = await testRes.text().catch(() => "");
-        return NextResponse.json({
-          ok: false,
-          status: testRes.status,
-          latency,
-          error: errorBody.slice(0, 200) || testRes.statusText,
-        });
-      }
-    } catch (fetchError) {
-      const latency = Date.now() - startTime;
+      baseUrl = normalizeBaseUrl(agg.baseUrl);
+    } catch (e) {
       return NextResponse.json({
         ok: false,
         status: 0,
-        latency,
-        error: fetchError instanceof Error ? fetchError.message : "Connection failed",
+        latency: 0,
+        error: e instanceof Error ? e.message : "Base URL tidak valid",
       });
     }
+
+    const result = await fetchUpstream(`${baseUrl}/models`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      timeoutMs: 20_000,
+      retries: 1,
+    });
+
+    if (!result.response) {
+      return NextResponse.json({ ok: false, status: 0, latency: result.latency, error: result.error });
+    }
+
+    if (result.ok) {
+      const data = await result.response.json().catch(() => null);
+      const modelCount = data?.data?.length ?? data?.models?.length ?? null;
+      return NextResponse.json({ ok: true, status: result.status, latency: result.latency, modelCount });
+    }
+
+    const errorBody = await result.response.text().catch(() => "");
+    const hint =
+      result.status === 401 || result.status === 403
+        ? "API key ditolak provider"
+        : result.status === 404
+          ? "Endpoint /models tidak ditemukan — base URL mungkin kurang/berlebih path (mis. /v1)"
+          : result.status === 429
+            ? "Rate limit provider tercapai"
+            : "";
+    return NextResponse.json({
+      ok: false,
+      status: result.status,
+      latency: result.latency,
+      error: [hint, errorBody.slice(0, 200) || result.response.statusText].filter(Boolean).join(": "),
+    });
   } catch (error: unknown) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Internal server error" }, { status: 500 });
   }

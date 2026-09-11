@@ -170,14 +170,19 @@ function AdminProvidersPageContent() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
+        // Beri ruang lebih dari timeout server (20s + 1 retry) agar pesan server yang tampil.
+        signal: AbortSignal.timeout(60_000),
       });
       const data: TestResult = await res.json();
       setTestResults((prev) => ({ ...prev, [id]: data }));
-    } catch {
-      setTestResults((prev) => ({
-        ...prev,
-        [id]: { ok: false, status: 0, latency: 0, error: "Request failed" },
-      }));
+      if (!data.ok && data.error) toast.error(data.error);
+    } catch (e) {
+      const error =
+        e instanceof Error && (e.name === "TimeoutError" || e.name === "AbortError")
+          ? "Test dibatalkan: server tidak merespons dalam 60s"
+          : "Request failed";
+      setTestResults((prev) => ({ ...prev, [id]: { ok: false, status: 0, latency: 0, error } }));
+      toast.error(error);
     }
     setTestingId(null);
   };

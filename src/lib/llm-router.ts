@@ -139,7 +139,7 @@ async function tryProviderRaw(
   }
 
   const resolvedKey = apiKey.keyId || keyId || apiKey.keyId;
-  const url = `${provider.baseUrl}/chat/completions`;
+  const url = `${provider.baseUrl.replace(/\/+$/, "")}/chat/completions`;
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -182,11 +182,14 @@ async function tryProviderRaw(
   if (req.user !== undefined) body.user = req.user;
   if (req.metadata !== undefined) body.metadata = req.metadata;
 
+  // ponytail: single hard ceiling for upstream calls so a hung provider can't
+  // pin the connection open forever. Add per-model overrides only if needed.
+  const timeout = AbortSignal.timeout(120_000);
   const response = await fetch(url, {
     method: "POST",
     headers,
     body: JSON.stringify(body),
-    signal,
+    signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
   });
 
   return { response, provider: provider.name, keyId: resolvedKey };

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSuperadmin } from "@/lib/admin-auth";
 import { prisma } from "@/lib/db";
+import { normalizeBaseUrl } from "@/lib/upstream";
 
 export async function GET() {
   const authError = await requireSuperadmin();
@@ -38,10 +39,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "name, baseUrl, apiKey required" }, { status: 400 });
     }
 
+    let normalizedBaseUrl: string;
+    try {
+      normalizedBaseUrl = normalizeBaseUrl(baseUrl);
+    } catch (e) {
+      return NextResponse.json({ error: e instanceof Error ? e.message : "Base URL tidak valid" }, { status: 400 });
+    }
+
     const aggregator = await prisma.aggregatorConfig.create({
       data: {
         name,
-        baseUrl,
+        baseUrl: normalizedBaseUrl,
         // ponytail: plaintext DB storage kept until proper KMS/encryption added.
         apiKeyEnc: apiKey,
         isActive,
@@ -70,7 +78,13 @@ export async function PUT(request: NextRequest) {
 
     const data: Record<string, unknown> = {};
     if (name !== undefined) data.name = name;
-    if (baseUrl !== undefined) data.baseUrl = baseUrl;
+    if (baseUrl !== undefined) {
+      try {
+        data.baseUrl = normalizeBaseUrl(baseUrl);
+      } catch (e) {
+        return NextResponse.json({ error: e instanceof Error ? e.message : "Base URL tidak valid" }, { status: 400 });
+      }
+    }
     if (apiKey !== undefined) data.apiKeyEnc = apiKey;
     if (isActive !== undefined) data.isActive = isActive;
 
